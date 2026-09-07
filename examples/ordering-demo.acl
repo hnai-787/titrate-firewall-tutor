@@ -1,0 +1,6 @@
+! Demonstrates the single biggest ACL lesson: same two rules, different
+! order, opposite result for the same packet (see README "Worked example").
+ip access-list extended DEMO
+ 10 permit ip 192.168.1.0 0.0.0.255 any
+ 20 deny tcp host 192.168.1.10 any eq 443
+ 30 deny ip any any

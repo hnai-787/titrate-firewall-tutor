@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FirewallTutor.Cli/FirewallTutor.Cli.csproj" />
+    <Project Path="src/FirewallTutor.Core/FirewallTutor.Core.csproj" />
+    <Project Path="src/FirewallTutor.Web/FirewallTutor.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FirewallTutor.Core.Tests/FirewallTutor.Core.Tests.csproj" />
+  </Folder>
+</Solution>

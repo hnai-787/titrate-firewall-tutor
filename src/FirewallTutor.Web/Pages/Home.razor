@@ -1,0 +1,325 @@
+@page "/"
+
+<PageTitle>Firewall Tutor</PageTitle>
+
+<h1>Firewall Tutor</h1>
+<p class="text-muted">
+    Paste a Cisco extended ACL, build a packet, predict what will happen, then
+    step through the evaluation one rule at a time -- exactly the way a real
+    firewall sees it. Runs entirely in your browser; nothing is uploaded.
+</p>
+
+<div class="row">
+    <div class="col-lg-6">
+        <h4>1. Rules</h4>
+        <div class="mb-2">
+            <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => LoadPreset(PresetOrdering)">Ordering example</button>
+            <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => LoadPreset(PresetReordered)">Same rules, reordered</button>
+            <button class="btn btn-sm btn-outline-secondary" @onclick="() => LoadPreset(PresetWildcard)">Wildcard example</button>
+        </div>
+        <textarea class="form-control" rows="8" style="font-family: monospace" @bind="AclText" @bind:event="oninput"></textarea>
+        <button class="btn btn-primary mt-2" @onclick="ParseRules">Parse rules</button>
+
+        @if (ParseErrors.Count > 0)
+        {
+            <div class="alert alert-danger mt-2">
+                <strong>Could not parse this policy -- nothing is guessed:</strong>
+                <ul class="mb-0">
+                    @foreach (var error in ParseErrors)
+                    {
+                        <li>line @error.Line: @error.Message</li>
+                    }
+                </ul>
+            </div>
+        }
+        else if (Policy is not null)
+        {
+            <div class="alert alert-success mt-2">Parsed @Policy.Rules.Count rule(s). Default action: @Policy.DefaultAction.</div>
+        }
+
+        <h4 class="mt-4">2. Packet</h4>
+        <div class="row g-2">
+            <div class="col-4">
+                <label class="form-label">Protocol</label>
+                <select class="form-select" @bind="PacketProtocol">
+                    <option value="tcp">TCP</option>
+                    <option value="udp">UDP</option>
+                    <option value="icmp">ICMP</option>
+                </select>
+            </div>
+            <div class="col-4">
+                <label class="form-label">Source IP</label>
+                <input class="form-control" @bind="PacketSrc" placeholder="10.0.0.5" />
+            </div>
+            <div class="col-4">
+                <label class="form-label">Destination IP</label>
+                <input class="form-control" @bind="PacketDst" placeholder="192.168.1.10" />
+            </div>
+            @if (PacketProtocol is "tcp" or "udp")
+            {
+                <div class="col-4">
+                    <label class="form-label">Source port</label>
+                    <input class="form-control" @bind="PacketSrcPort" placeholder="5000" />
+                </div>
+                <div class="col-4">
+                    <label class="form-label">Destination port</label>
+                    <input class="form-control" @bind="PacketDstPort" placeholder="443" />
+                </div>
+            }
+        </div>
+
+        @if (PacketError is not null)
+        {
+            <div class="alert alert-danger mt-2">@PacketError</div>
+        }
+
+        <button class="btn btn-primary mt-3" @onclick="BuildPacketAndPredict" disabled="@(Policy is null)">Build packet</button>
+    </div>
+
+    <div class="col-lg-6">
+        @if (Trace is null && CurrentPacket is not null)
+        {
+            <h4>3. Predict</h4>
+            <p>Packet: <code>@CurrentPacket.DisplayText</code></p>
+            <p>Before we step through it -- what do you think the firewall will do?</p>
+            <div class="btn-group" role="group">
+                <button class="btn @(Prediction == "allow" ? "btn-success" : "btn-outline-success")" @onclick='() => SetPrediction("allow")'>Allow</button>
+                <button class="btn @(Prediction == "deny" ? "btn-danger" : "btn-outline-danger")" @onclick='() => SetPrediction("deny")'>Deny</button>
+                <button class="btn @(Prediction == "not sure" ? "btn-secondary" : "btn-outline-secondary")" @onclick='() => SetPrediction("not sure")'>Not sure</button>
+            </div>
+            @if (Prediction is not null)
+            {
+                <div class="mt-3">
+                    <button class="btn btn-primary" @onclick="StartStepping">Start stepping through evaluation</button>
+                </div>
+            }
+        }
+
+        @if (Trace is not null)
+        {
+            <h4>3. Step through evaluation</h4>
+            <p>Packet: <code>@Trace.Packet.DisplayText</code> &middot; Prediction: <strong>@Prediction</strong></p>
+
+            <div class="mb-3">
+                @for (int i = 0; i < Trace.Steps.Count; i++)
+                {
+                    var step = Trace.Steps[i];
+                    string badgeClass = step.EvaluationStoppedHere ? "bg-success"
+                        : step.Fields.Count == 0 ? "bg-secondary"
+                        : "bg-danger";
+                    int idx = i;
+                    <button class="btn btn-sm @(idx == StepIndex ? "border border-dark" : "") @(idx==StepIndex?"":"") m-1"
+                            style="background:none;border-width:2px"
+                            @onclick="() => StepIndex = idx">
+                        <span class="badge @badgeClass">@step.Rule.Ordinal</span>
+                    </button>
+                }
+                <button class="btn btn-sm m-1 @(StepIndex == Trace.Steps.Count ? "border border-dark" : "")"
+                        style="background:none;border-width:2px" @onclick="() => StepIndex = Trace.Steps.Count">
+                    <span class="badge @(Trace.UsedImplicitDefault ? "bg-warning text-dark" : "bg-secondary")">deny-all</span>
+                </button>
+            </div>
+
+            @if (StepIndex < Trace.Steps.Count)
+            {
+                var step = Trace.Steps[StepIndex];
+                <div class="card">
+                    <div class="card-header">
+                        Rule @step.Rule.Ordinal (line @step.Rule.SourceLine): <strong>@step.Rule.Action</strong> <code>@step.Rule.RawText</code>
+                    </div>
+                    <div class="card-body">
+                        @if (step.Fields.Count == 0)
+                        {
+                            <p class="text-muted mb-0">
+                                <em>NOT EVALUATED</em> -- an earlier rule already matched and evaluation stopped there.
+                                In a real firewall, this rule is never even looked at once that happens.
+                            </p>
+                        }
+                        else
+                        {
+                            <table class="table table-sm">
+                                <thead><tr><th>Field</th><th>Packet value</th><th>Rule value</th><th>Result</th></tr></thead>
+                                <tbody>
+                                    @foreach (var field in step.Fields)
+                                    {
+                                        <tr class="@(field.Matched ? "" : "table-danger")">
+                                            <td>@field.FieldName</td>
+                                            <td><code>@field.PacketValue</code></td>
+                                            <td><code>@field.RuleValue</code></td>
+                                            <td>@(field.Matched ? "✓" : "✗")</td>
+                                        </tr>
+                                        @if (field.BitBreakdown is not null)
+                                        {
+                                            <tr><td colspan="4" style="overflow-x:auto;max-width:0"><pre class="mb-0" style="font-size:0.8rem">@field.BitBreakdown</pre></td></tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                            @if (step.Matched)
+                            {
+                                <div class="alert alert-success">
+                                    <strong>MATCH -- @step.Rule.Action.ToString().ToUpperInvariant()</strong><br />
+                                    Evaluation stops here (first match wins). Every rule after this one is never evaluated for this packet.
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning mb-0">
+                                    <strong>NO MATCH</strong> -- @step.FirstFailure!.FieldName: @step.FirstFailure!.Explanation.
+                                    Continuing to the next rule.
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card">
+                    <div class="card-header">Implicit default</div>
+                    <div class="card-body">
+                        <p><code>deny ip any any</code> -- always present at the end of every ACL, whether you write it or not.</p>
+                        @if (Trace.UsedImplicitDefault)
+                        {
+                            <div class="alert alert-warning mb-0">No configured rule matched this packet, so the implicit default decided it.</div>
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0">Not reached this time -- an earlier rule already matched.</p>
+                        }
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-header">Summary</div>
+                    <div class="card-body">
+                        <p>Final decision: <strong>@Trace.FinalAction.ToString().ToUpperInvariant()</strong></p>
+                        <p>Matched rule: @(Trace.MatchedRuleOrdinal is int ord ? $"#{ord}" : "none -- implicit default")</p>
+                        <p>Rules actually evaluated: @Trace.Steps.Count(s => s.Fields.Count > 0) of @Trace.Steps.Count</p>
+                        @{
+                            bool predictedAllow = Prediction == "allow";
+                            bool predictedDeny = Prediction == "deny";
+                            bool correct = (predictedAllow && Trace.FinalAction == RuleAction.Allow) ||
+                                           (predictedDeny && Trace.FinalAction == RuleAction.Deny);
+                        }
+                        @if (Prediction is "allow" or "deny")
+                        {
+                            <p class="@(correct ? "text-success" : "text-danger")">
+                                You predicted <strong>@Prediction</strong> -- @(correct ? "correct!" : "not this time.")
+                            </p>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="mt-3">
+                <button class="btn btn-outline-secondary" disabled="@(StepIndex == 0)" @onclick="() => StepIndex--">&laquo; Previous</button>
+                <button class="btn btn-outline-secondary" disabled="@(StepIndex >= Trace.Steps.Count)" @onclick="() => StepIndex++">Next &raquo;</button>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private const string PresetOrdering =
+        "ip access-list extended DEMO\n" +
+        " 10 permit ip 192.168.1.0 0.0.0.255 any\n" +
+        " 20 deny tcp host 192.168.1.10 any eq 443\n" +
+        " 30 deny ip any any\n";
+
+    private const string PresetReordered =
+        "ip access-list extended DEMO\n" +
+        " 10 deny tcp host 192.168.1.10 any eq 443\n" +
+        " 20 permit ip 192.168.1.0 0.0.0.255 any\n" +
+        " 30 deny ip any any\n";
+
+    private const string PresetWildcard =
+        "ip access-list extended WILDCARD-DEMO\n" +
+        " 10 permit tcp 10.1.0.0 0.0.255.0 any eq 443\n" +
+        " 20 deny ip any any\n";
+
+    private string AclText = PresetOrdering;
+    private Policy? Policy;
+    private IReadOnlyList<ParseError> ParseErrors = Array.Empty<ParseError>();
+
+    private string PacketProtocol = "tcp";
+    private string PacketSrc = "192.168.1.10";
+    private string PacketDst = "8.8.8.8";
+    private string PacketSrcPort = "5000";
+    private string PacketDstPort = "443";
+    private string? PacketError;
+
+    private Packet? CurrentPacket;
+    private string? Prediction;
+    private EvaluationTrace? Trace;
+    private int StepIndex;
+
+    protected override void OnInitialized() => ParseRules();
+
+    private void LoadPreset(string preset)
+    {
+        AclText = preset;
+        ParseRules();
+    }
+
+    private void ParseRules()
+    {
+        var result = CiscoAclParser.Parse(AclText);
+        ParseErrors = result.Errors;
+        Policy = result.Ok ? result.Policy : null;
+        Trace = null;
+        CurrentPacket = null;
+        Prediction = null;
+    }
+
+    private void BuildPacketAndPredict()
+    {
+        PacketError = null;
+        Trace = null;
+        Prediction = null;
+
+        if (!AddressSpec.TryParseIp(PacketSrc, out uint src))
+        {
+            PacketError = "Source IP is not a valid IPv4 address.";
+            return;
+        }
+        if (!AddressSpec.TryParseIp(PacketDst, out uint dst))
+        {
+            PacketError = "Destination IP is not a valid IPv4 address.";
+            return;
+        }
+
+        int srcPort = 0, dstPort = 0;
+        if (PacketProtocol is "tcp" or "udp")
+        {
+            if (!int.TryParse(PacketSrcPort, out srcPort) || srcPort is < 0 or > 65535)
+            {
+                PacketError = "Source port must be between 0 and 65535.";
+                return;
+            }
+            if (!int.TryParse(PacketDstPort, out dstPort) || dstPort is < 0 or > 65535)
+            {
+                PacketError = "Destination port must be between 0 and 65535.";
+                return;
+            }
+        }
+
+        CurrentPacket = new Packet
+        {
+            Protocol = PacketProtocol,
+            SourceAddress = src,
+            SourcePort = srcPort,
+            DestinationAddress = dst,
+            DestinationPort = dstPort,
+        };
+    }
+
+    private void SetPrediction(string prediction) => Prediction = prediction;
+
+    private void StartStepping()
+    {
+        if (Policy is null || CurrentPacket is null) return;
+        Trace = FirewallEvaluator.Evaluate(Policy, CurrentPacket);
+        StepIndex = 0;
+    }
+}

@@ -1,4 +1,4 @@
-# Firewall Tutor (C#)
+# Firewall Tutor — Interactive ACL Execution Visualizer
 
 ## Course Information
 
@@ -9,43 +9,106 @@
 | University | Air University, Islamabad |
 | Students | Hussain Ali (232095), Syed Jazib Ali Rizvi (232145), Shehroze Sameer (232091) |
 
+This started as a WinForms coursework app (tabs for Rules/Packets/Firewall/
+Logs) and has been rebuilt into **Firewall Tutor**: a browser-based,
+step-by-step ACL execution visualizer for learners. The original WinForms
+program, its data, and its `.docx` report are preserved unmodified under
+[`archive/academic-original/`](archive/academic-original/).
+
 ## Overview
 
-A Windows Forms "Firewall Tutor" app that teaches how a rule-based firewall
-evaluates packets, by walking through Rules, Packets, Firewall evaluation,
-and Logs in a tabbed interface.
+Firewall Tutor answers a different question than its sibling project,
+[`fwlint`](../firewall-rule-engine-cpp/): fwlint audits a *whole ruleset*
+for structural problems; Firewall Tutor explains *why one specific packet*
+got the decision it got, one rule and one field at a time. Paste a Cisco
+extended ACL (or use a preset), build a packet, predict what the firewall
+will do, then step forward and backward through the exact evaluation —
+seeing which field of which rule matched or failed, watching evaluation
+stop the instant a rule matches, and seeing the always-present implicit
+`deny ip any any` at the end.
+
+```text
+fwlint            "Is this ruleset safe/correct?"   static analysis   C++
+Firewall Tutor    "Why did THIS packet get THIS decision?"   interactive execution   C#
+```
 
 ## Problem Statement
 
-Make firewall rule evaluation visible and interactive for someone learning
-the concept, rather than a black box — show the ordered rules, the packets,
-and the step-by-step decision for each one.
+Cisco ACL behavior is built from individually simple rules (top-down
+processing, first-match-wins, implicit deny) that are still routinely
+misunderstood in combination — the classic beginner mistake is putting a
+broad `permit` before a narrower `deny`, silently making the `deny`
+unreachable. The learning gap isn't "students need another firewall
+simulator" (Packet Tracer already does that, and does far more); it's that
+students need to see the *execution*, not just the final answer, to build
+a correct mental model of first-match evaluation.
 
 ## Objectives
 
-- Model a `FirewallEngine` that evaluates packets against an ordered rule
-  list with a configurable default action.
-- Persist rules/packets/results via CSV so state survives between runs.
-- Present the whole flow through a guided tabbed UI (including a Tutorial tab).
+- Evaluate one concrete packet against an ordered ACL and produce a full
+  execution trace — every rule considered, every field checked, and why —
+  not just a final decision.
+- Make the "first match wins, everything after is never evaluated" rule
+  visible rather than implied.
+- Make the implicit default (`deny ip any any`) a first-class, always
+  -visible part of every policy instead of an invisible fallback.
+- Let a learner predict the outcome before seeing it, then compare.
 
 ## Tools and Technologies
 
-- C# / .NET (WinForms)
-- CSV-based persistence (`Services/CsvStorage.cs`)
+- C# / .NET 10
+- **FirewallTutor.Core** — pure C# evaluation engine and Cisco ACL parser,
+  zero UI dependencies
+- **FirewallTutor.Web** — Blazor WebAssembly UI (the primary interface: no
+  backend, no upload, runs entirely client-side in the browser)
+- **FirewallTutor.Cli** — [Spectre.Console](https://spectreconsole.net/)
+  terminal step-through (secondary interface, useful for scripting/CI and
+  for learners without a GUI)
+- xUnit for the test suite
 
 ## Features
 
-- Tabs: Home, Rules, Packets, Firewall, Settings, Tutorial, About.
-- Ordered rule evaluation with a configurable default action (default DENY).
-- Log of evaluation results per packet.
+- **Field-by-field explanation** — every rule check shows Protocol/Source/
+  Source port/Destination/Destination port individually, with a plain
+  -English reason for each pass or fail, not just "no match."
+- **First-match stop boundary** — the instant a rule matches, every rule
+  after it is visibly marked "NOT EVALUATED," because in a real firewall it
+  genuinely never runs.
+- **Implicit default made visible** — `deny ip any any` is rendered as a
+  permanent, always-present final step, whether the packet reaches it or not.
+- **Predict-then-reveal** — before stepping through, the learner picks
+  Allow/Deny/Not sure; the summary reports whether they were right.
+- **Bit-level wildcard breakdown** — for address rules with a non-trivial
+  wildcard mask, the exact bits being compared (and which are "don't care")
+  are shown, including genuinely discontiguous masks (e.g. `0.0.255.0` —
+  "ignore only the third octet"), which fwlint deliberately rejects for its
+  different (whole-policy, exact-set-algebra) purposes but which are
+  perfectly well-defined for testing one concrete packet.
+- **Forward/backward/jump navigation** — the execution trace is computed
+  once and is immutable, so moving between rules (via Next/Previous or
+  clicking any rule directly) costs nothing and never re-runs anything.
+- **Real Cisco ACL parsing** — the same bounded, fail-closed subset
+  fwlint's C++ parser supports (reimplemented here, not shared, since the
+  two tools' needs differ slightly): numbered and named extended ACLs,
+  `host`/`any`/wildcard addresses, `eq`/`range`/`gt`/`lt`/`neq` ports,
+  named ports (telnet/www/https/ssh/...).
 
-## Methodology
+## Architecture
 
-1. Design the `FirewallEngine` evaluation logic (protocol/IP/field-agnostic string matching).
-2. Build the WinForms UI around it (`src/Forms`, `src/Models`, `src/Services`).
-3. Mirror the same rules/packets dataset used in the C++ version
-   ([`firewall-rule-engine-cpp`](../firewall-rule-engine-cpp/)) for direct comparison.
-4. Verify output against expected decisions.
+```text
+FirewallTutor.Core (no UI dependencies)
+  Model/       AddressSpec, PortSpec, ProtocolSpec, FirewallRule, Packet, Policy
+  Parsing/     CiscoAclParser (fails closed, same subset as fwlint)
+  Evaluation/  FirewallEvaluator.Evaluate(Policy, Packet) -> EvaluationTrace
+  Tracing/     EvaluationTrace, RuleEvaluation, FieldEvaluation
+        |
+        +--> FirewallTutor.Web (Blazor WASM, primary UI)
+        +--> FirewallTutor.Cli (Spectre.Console, secondary UI)
+```
+
+Both UIs call the exact same `FirewallEvaluator` and render its trace
+directly — neither one re-derives or duplicates evaluation logic, so the
+CLI and the web UI can never disagree about what happened.
 
 ## Repository Structure
 
@@ -53,61 +116,166 @@ and the step-by-step decision for each one.
 firewall-tutor-csharp/
   README.md
   PROJECT_NOTES.md
-  src/               (Forms/, Models/, Services/, Program.cs)
-  data/              (rules.csv, packets.csv)
-  output/            (results.csv)
-  docs/              (original report)
-  screenshots/
+  CHANGELOG.md
+  FirewallTutor.sln
+  src/
+    FirewallTutor.Core/   model, parser, evaluator, trace types
+    FirewallTutor.Cli/    Spectre.Console step-through
+    FirewallTutor.Web/    Blazor WebAssembly UI
+  tests/
+    FirewallTutor.Core.Tests/   33 xUnit tests
+  examples/
+    ordering-demo.acl, ordering-demo-reordered.acl   (see "Worked example")
+  archive/academic-original/   the original WinForms coursework program, untouched
+  data/, output/, docs/, screenshots/   original coursework artifacts
   project.yaml
 ```
 
-## Setup Instructions
+## Building from source
+
+Requires the .NET 10 SDK.
 
 ```bash
-dotnet build
+dotnet build            # builds Core, Cli, Web, and the test project
+dotnet test             # 33 tests
 ```
 
 ## Usage
 
+### CLI
+
 ```bash
-dotnet run
-# or open FirewallTutor.csproj in Visual Studio and run
+dotnet run --project src/FirewallTutor.Cli -- \
+  --file examples/ordering-demo.acl --protocol tcp --src 192.168.1.10 \
+  --dst 8.8.8.8 --dst-port 443 --auto
 ```
+
+Drop `--auto` to step through interactively (press Enter between rules).
+
+### Web
+
+```bash
+dotnet run --project src/FirewallTutor.Web
+```
+
+Then open the printed `http://localhost:<port>` URL. Runs entirely
+client-side — no backend, nothing is uploaded.
+
+## Worked example: same two rules, reordered, opposite result
+
+This is the single most important ACL lesson, and it's real, captured CLI
+output (not a description) from
+[`examples/ordering-demo.acl`](examples/ordering-demo.acl) vs.
+[`examples/ordering-demo-reordered.acl`](examples/ordering-demo-reordered.acl) —
+identical rules, swapped order, same packet:
+
+**Broad allow first** (`10 permit ip 192.168.1.0/24 any` before
+`20 deny tcp host 192.168.1.10 any eq 443`):
+
+```text
+Rule 1 (line 4): Allow 10 permit ip 192.168.1.0 0.0.0.255 any
+  Protocol  TCP  ip    OK
+  Source    192.168.1.10  192.168.1.0 0.0.0.255  OK
+  Destination  8.8.8.8  any  OK
+MATCH -- ALLOW
+---- EVALUATION STOPS HERE (first match wins) ----
+Rule 2: NOT EVALUATED -- an earlier rule already matched.
+
+Final decision: ALLOW
+```
+
+**Same two rules, deny moved first**:
+
+```text
+Rule 1 (line 4): Deny 10 deny tcp host 192.168.1.10 any eq 443
+  Protocol  TCP  tcp   OK
+  Source    192.168.1.10  host 192.168.1.10  OK
+  Source port  0  any  OK
+  Destination  8.8.8.8  any  OK
+  Destination port  443  eq 443  OK
+MATCH -- DENY
+---- EVALUATION STOPS HERE (first match wins) ----
+
+Final decision: DENY
+```
+
+Same packet, same two rules, opposite result, purely from reordering. This
+is exactly the lesson the whole tool is built around, and it's reproducible
+by running the two commands under "Usage" above.
 
 ## How to Review
 
-1. Start with this README.
-2. Open `docs/firewall-tutor-csharp.docx` for the full write-up.
-3. Compare `data/rules.csv`/`data/packets.csv` against `output/results.csv`.
-4. Browse `screenshots/` for the Home/Rules/Packets/Logs/Settings/Tutorial/About tabs.
+1. Start with this README, then read
+   [`src/FirewallTutor.Core/Evaluation/FirewallEvaluator.cs`](src/FirewallTutor.Core/Evaluation/FirewallEvaluator.cs)
+   (the whole product is that one function's output, rendered).
+2. Run `dotnet test` — 33 tests, all passing.
+3. Run the CLI worked example above and confirm the reordering result.
+4. Run the web UI (`dotnet run --project src/FirewallTutor.Web`), click
+   "Wildcard example," build a packet with source `10.1.99.0`, and step
+   through it to see the bit-level wildcard breakdown.
+5. For the original coursework artifact: `archive/academic-original/` and
+   `docs/firewall-tutor-csharp.docx`.
 
-## Screenshots
+## Testing
 
-See `screenshots/` — 7 screenshots covering every tab.
+```text
+$ dotnet test
+Passed!  - Failed: 0, Passed: 33, Skipped: 0, Total: 33
+```
 
-## Results
+Coverage: address/port/protocol matching (including the discontiguous
+-wildcard case fwlint deliberately excludes), the evaluator's first-match
+-wins semantics (first/middle rule match, implicit-default fallthrough,
+protocol/source/destination/port mismatch reporting, multiple simultaneous
+mismatches, broad-before-specific vs. specific-before-broad ordering), and
+the Cisco ACL parser's happy paths and fail-closed error paths.
 
-Uses the same 8-rule/8-packet dataset as the C++ firewall engine.
+## Original Results (academic artifact)
+
+Preserved from the original WinForms coursework submission — see
+`archive/academic-original/` for the untouched program, data, and report.
+Uses the same 8-rule/8-packet dataset as the sibling C++ firewall engine;
 `output/results.csv` confirms correct evaluation, e.g. rule 6 allowing
 `172.16.5.25 → 192.168.5.10 TCP` and rule 8 allowing
 `192.168.10.15 → 1.1.1.1 TCP`.
 
 ## Limitations
 
-- Teaching tool, not a production firewall — no live packet capture.
-- Rule matching is string-based rather than a proper network-protocol parser.
+- **Cisco ACL subset only** — same bounded subset as fwlint (no
+  object-groups, `established`, precedence/tos/time-range). Fails closed
+  with a line number rather than guessing.
+- **IPv4 only.**
+- **No curated lesson/challenge content system** — the three presets in
+  the web UI are hand-built examples, not a full lesson library with
+  scored challenges.
+- **No drag-and-drop rule reordering in the UI** — reordering is
+  demonstrated via the two example files (see "Worked example"), not an
+  in-browser drag interaction.
+- **Not deployed** — runs locally via `dotnet run`; no GitHub Pages/static
+  hosting has been set up yet (this repo hasn't been pushed to GitHub in
+  this task).
+- **No accessibility audit performed** — keyboard navigation and
+  screen-reader support have not been specifically tested.
 
 ## Future Enhancements
 
-- CIDR/port-based matching.
-- Import/export of rule sets between the C++ and C# versions.
+- A curated lesson library (ordering, implicit deny, wildcard masks,
+  standard vs. extended ACLs) stored as data, not embedded in components.
+- Challenge mode: give a requirement, let the learner write/reorder rules,
+  and verify against target packets.
+- Drag-and-drop rule reordering directly in the web UI.
+- GitHub Pages deployment (Blazor WASM is fully static-hostable; no
+  backend changes needed).
+- `iptables`/nftables and IPv6 support, mirroring fwlint's own roadmap.
 
 ## Safety and Privacy
 
 - No real secrets, credentials, or private keys are included.
-- No private user data is included; all rules/packets are synthetic.
+- No private user data is included. All example/preset rules and packets
+  are synthetic.
 
 ## Ethical Notice
 
-This project is intended strictly for academic learning and does not
-interact with any real network.
+This project only evaluates rule files and synthetic packets in-memory —
+it never opens a network connection or interacts with a real device.
+Intended strictly for learning.

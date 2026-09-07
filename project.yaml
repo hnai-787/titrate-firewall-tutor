@@ -9,18 +9,27 @@ status: completed
 visibility: public
 
 description:
-  short: "A Windows Forms teaching app that visualizes how an ordered firewall rule set evaluates network packets."
+  short: "Firewall Tutor: a Blazor WebAssembly + C# tool that steps through Cisco ACL evaluation field-by-field, showing exactly why a packet was allowed or denied."
   long: |
-    A C# WinForms application built for an Object-Oriented Programming
-    course (Air University, Semester 2, Spring 2024). Presents rules,
-    packets, firewall evaluation, and logs across dedicated tabs (Home,
-    Rules, Packets, Firewall, Settings, Tutorial, About) so a student can
-    see step-by-step how an ordered allow/deny rule engine reaches a
-    decision, including a configurable default action and CSV-based
-    persistence.
+    Started as a Windows Forms teaching app for an Object-Oriented
+    Programming course (Air University, Semester 2, Spring 2024) and was
+    rebuilt into an interactive ACL execution visualizer. A pure C#
+    evaluation engine (FirewallTutor.Core) parses a real (bounded-subset)
+    Cisco extended ACL and produces a full execution trace for one packet:
+    every rule considered, every field (protocol/source/port/destination)
+    checked individually with a plain-English reason, the exact point
+    evaluation stops at the first match, and the always-present implicit
+    deny. A Blazor WebAssembly UI (client-side only, no backend) lets a
+    learner predict the outcome, then step forward/backward through the
+    trace, including a bit-level breakdown for wildcard-mask address
+    rules. A Spectre.Console CLI provides the same step-through in a
+    terminal. Positioned as the teaching counterpart to the sibling
+    project firewall-rule-engine-cpp (fwlint), which audits whole
+    rulesets rather than explaining single-packet execution. The original
+    WinForms program is preserved unmodified under archive/academic-original/.
 
-technologies: ["C#", ".NET", "WinForms"]
-tags: ["cybersecurity", "firewall", "csharp", "winforms", "object-oriented-programming"]
+technologies: ["C#", ".NET 10", "Blazor WebAssembly", "Spectre.Console", "xUnit"]
+tags: ["cybersecurity", "firewall", "csharp", "blazor", "webassembly", "networking-education", "cli-tool"]
 
 repository:
   provider: github
@@ -51,4 +60,10 @@ assets:
 
 achievements: []
 
-metrics: []
+metrics:
+  - label: "Unit tests passing (xUnit)"
+    value: "33/33"
+    verified: true
+  - label: "Rule-order reversal demo: same rules, opposite result"
+    value: "Verified via CLI (ordering-demo.acl vs ordering-demo-reordered.acl)"
+    verified: true

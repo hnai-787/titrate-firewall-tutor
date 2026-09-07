@@ -1,0 +1,9 @@
+Id,Field,Value,Action,Enabled,Description
+1,SourceIp,10.0.0.5,Deny,True,Block known suspicious source
+2,DestinationIp,192.168.1.10-20,Deny,True,Block internal restricted range
+3,DestinationIp,192.168.255.255,Allow,True,Allow broadcast lab packet
+4,Protocol,ICMP,Deny,True,Block ping traffic
+5,Protocol,UDP,Allow,True,Allow UDP before later deny rule
+6,SourceIp,172.16.5.0/24,Allow,True,Allow trusted lab subnet
+7,DestinationIp,8.8.8.8,Deny,True,Block DNS to public resolver
+8,Protocol,TCP,Allow,True,Allow TCP as final protocol rule
