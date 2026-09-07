@@ -1,0 +1,54 @@
+name: Firewall Tutor (C#)
+slug: firewall-tutor-csharp
+
+category: cybersecurity
+subcategory: "Object-Oriented Programming coursework (CS112)"
+
+status: completed
+
+visibility: public
+
+description:
+  short: "A Windows Forms teaching app that visualizes how an ordered firewall rule set evaluates network packets."
+  long: |
+    A C# WinForms application built for an Object-Oriented Programming
+    course (Air University, Semester 2, Spring 2024). Presents rules,
+    packets, firewall evaluation, and logs across dedicated tabs (Home,
+    Rules, Packets, Firewall, Settings, Tutorial, About) so a student can
+    see step-by-step how an ordered allow/deny rule engine reaches a
+    decision, including a configurable default action and CSV-based
+    persistence.
+
+technologies: ["C#", ".NET", "WinForms"]
+tags: ["cybersecurity", "firewall", "csharp", "winforms", "object-oriented-programming"]
+
+repository:
+  provider: github
+  visibility: public
+  sync: true
+
+portfolio:
+  enabled: true
+  featured: false
+
+documentation:
+  readme: true
+  case_study: false
+
+dates:
+  started: null
+  completed: null
+
+links:
+  github: null
+  demo: null
+  documentation: null
+
+assets:
+  hero: null
+  screenshots:
+    - screenshots
+
+achievements: []
+
+metrics: []
