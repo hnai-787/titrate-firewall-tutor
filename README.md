@@ -1,4 +1,4 @@
-# Firewall Tutor — Interactive ACL Execution Visualizer
+# FireLab — Interactive ACL Execution Visualizer
 
 ## Course Information
 
