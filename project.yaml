@@ -54,8 +54,7 @@ links:
 
 assets:
   hero: assets/brand/titrate-readme-banner.png
-  screenshots:
-    - screenshots
+  screenshots: []
 
 achievements: []
 

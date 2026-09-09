@@ -7,7 +7,19 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- Deployed to GitHub Pages: https://hnai-787.github.io/titrate/
+- GitHub and maker-attribution links in the web UI's top bar.
+- The project's own icon as the web UI's favicon and nav-bar logo.
+
 ### Changed
+
+- Web UI now identifies itself as "Titrate" (page title, nav-bar brand,
+  heading) instead of the internal "Firewall Tutor" working name.
+- `archive/original/` and the root `data/`, `output/`, `docs/`, and
+  `screenshots/` folders (all original-WinForms artifacts) moved out of
+  this repository into a personal academic-archive repo; README updated
+  with a `TODO` pointer until that repo is published.
+- Removed `PROJECT_NOTES.md`.
 
 ### Fixed
 

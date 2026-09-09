@@ -5,10 +5,11 @@
 **Live demo:** https://hnai-787.github.io/titrate/
 
 This started as a WinForms app (tabs for Rules/Packets/Firewall/
-Logs) and has been rebuilt into **Firewall Tutor**: a browser-based,
+Logs) and has been rebuilt into **Titrate**: a browser-based,
 step-by-step ACL execution visualizer for learners. The original WinForms
-program, its data, and its `.docx` report are preserved unmodified under
-[`archive/original/`](archive/original/).
+program, its data, and its `.docx` report have been moved out of this
+repository into a personal academic-archive repo.
+`TODO`: link to that repo once it's published.
 
 ## Overview
 
@@ -112,9 +113,8 @@ CLI and the web UI can never disagree about what happened.
 ## Repository Structure
 
 ```text
-firewall-tutor-csharp/
+titrate/
   README.md
-  PROJECT_NOTES.md
   CHANGELOG.md
   FirewallTutor.sln
   src/
@@ -125,10 +125,12 @@ firewall-tutor-csharp/
     FirewallTutor.Core.Tests/   33 xUnit tests
   examples/
     ordering-demo.acl, ordering-demo-reordered.acl   (see "Worked example")
-  archive/original/   the original WinForms original program, untouched
-  data/, output/, docs/, screenshots/   original artifacts
   project.yaml
 ```
+
+The original WinForms program, its data, and its report/screenshots are
+preserved outside this repository (see the note at the top of this
+README).
 
 ## Building from source
 
@@ -212,8 +214,8 @@ by running the two commands under "Usage" above.
 4. Run the web UI (`dotnet run --project src/FirewallTutor.Web`), click
    "Wildcard example," build a packet with source `10.1.99.0`, and step
    through it to see the bit-level wildcard breakdown.
-5. For the original artifact: `archive/original/` and
-   `docs/firewall-tutor-csharp.docx`.
+5. For the original artifact: see the archive note at the top of this
+   README (`TODO`: link once the archive repo is published).
 
 ## Testing
 
@@ -231,10 +233,10 @@ the Cisco ACL parser's happy paths and fail-closed error paths.
 
 ## Original Results (original artifact)
 
-Preserved from the original WinForms original submission — see
-`archive/original/` for the untouched program, data, and report.
-Uses the same 8-rule/8-packet dataset as the sibling C++ firewall engine;
-`output/results.csv` confirms correct evaluation, e.g. rule 6 allowing
+Preserved from the original WinForms submission, now archived outside
+this repository (see the note at the top of this README). It used the
+same 8-rule/8-packet dataset as the sibling C++ firewall engine and
+confirmed correct evaluation, e.g. rule 6 allowing
 `172.16.5.25 → 192.168.5.10 TCP` and rule 8 allowing
 `192.168.10.15 → 1.1.1.1 TCP`.
 
