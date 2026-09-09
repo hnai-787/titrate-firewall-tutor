@@ -1,5 +1,8 @@
 # FireLab — Interactive ACL Execution Visualizer
 
+![firelab banner](assets/brand/firelab-readme-banner.png)
+
+
 ## Course Information
 
 | Field | Details |
@@ -109,6 +112,10 @@ FirewallTutor.Core (no UI dependencies)
 Both UIs call the exact same `FirewallEvaluator` and render its trace
 directly — neither one re-derives or duplicates evaluation logic, so the
 CLI and the web UI can never disagree about what happened.
+
+## How It Works
+
+![How firelab works](assets/brand/firelab-how-it-works.png)
 
 ## Repository Structure
 
