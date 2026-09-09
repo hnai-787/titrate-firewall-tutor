@@ -2,6 +2,7 @@
 
 ![titrate banner](assets/brand/titrate-readme-banner.png)
 
+**Live demo:** https://hnai-787.github.io/titrate/
 
 This started as a WinForms app (tabs for Rules/Packets/Firewall/
 Logs) and has been rebuilt into **Firewall Tutor**: a browser-based,
@@ -249,9 +250,6 @@ Uses the same 8-rule/8-packet dataset as the sibling C++ firewall engine;
 - **No drag-and-drop rule reordering in the UI** — reordering is
   demonstrated via the two example files (see "Worked example"), not an
   in-browser drag interaction.
-- **Not deployed** — runs locally via `dotnet run`; no GitHub Pages/static
-  hosting has been set up yet (this repo hasn't been pushed to GitHub in
-  this task).
 - **No accessibility audit performed** — keyboard navigation and
   screen-reader support have not been specifically tested.
 
@@ -262,8 +260,6 @@ Uses the same 8-rule/8-packet dataset as the sibling C++ firewall engine;
 - Challenge mode: give a requirement, let the learner write/reorder rules,
   and verify against target packets.
 - Drag-and-drop rule reordering directly in the web UI.
-- GitHub Pages deployment (Blazor WASM is fully static-hostable; no
-  backend changes needed).
 - `iptables`/nftables and IPv6 support, mirroring fwlint's own roadmap.
 
 ## Safety and Privacy
