@@ -3,20 +3,11 @@
 ![titrate banner](assets/brand/titrate-readme-banner.png)
 
 
-## Course Information
-
-| Field | Details |
-|---|---|
-| Course | Object-Oriented Programming (CS112) |
-| Semester | Semester 2 — Spring 2024 |
-| University | Air University, Islamabad |
-| Students | Hussain Ali (232095), Syed Jazib Ali Rizvi (232145), Shehroze Sameer (232091) |
-
-This started as a WinForms coursework app (tabs for Rules/Packets/Firewall/
+This started as a WinForms app (tabs for Rules/Packets/Firewall/
 Logs) and has been rebuilt into **Firewall Tutor**: a browser-based,
 step-by-step ACL execution visualizer for learners. The original WinForms
 program, its data, and its `.docx` report are preserved unmodified under
-[`archive/academic-original/`](archive/academic-original/).
+[`archive/original/`](archive/original/).
 
 ## Overview
 
@@ -133,8 +124,8 @@ firewall-tutor-csharp/
     FirewallTutor.Core.Tests/   33 xUnit tests
   examples/
     ordering-demo.acl, ordering-demo-reordered.acl   (see "Worked example")
-  archive/academic-original/   the original WinForms coursework program, untouched
-  data/, output/, docs/, screenshots/   original coursework artifacts
+  archive/original/   the original WinForms original program, untouched
+  data/, output/, docs/, screenshots/   original artifacts
   project.yaml
 ```
 
@@ -220,7 +211,7 @@ by running the two commands under "Usage" above.
 4. Run the web UI (`dotnet run --project src/FirewallTutor.Web`), click
    "Wildcard example," build a packet with source `10.1.99.0`, and step
    through it to see the bit-level wildcard breakdown.
-5. For the original coursework artifact: `archive/academic-original/` and
+5. For the original artifact: `archive/original/` and
    `docs/firewall-tutor-csharp.docx`.
 
 ## Testing
@@ -237,10 +228,10 @@ protocol/source/destination/port mismatch reporting, multiple simultaneous
 mismatches, broad-before-specific vs. specific-before-broad ordering), and
 the Cisco ACL parser's happy paths and fail-closed error paths.
 
-## Original Results (academic artifact)
+## Original Results (original artifact)
 
-Preserved from the original WinForms coursework submission — see
-`archive/academic-original/` for the untouched program, data, and report.
+Preserved from the original WinForms original submission — see
+`archive/original/` for the untouched program, data, and report.
 Uses the same 8-rule/8-packet dataset as the sibling C++ firewall engine;
 `output/results.csv` confirms correct evaluation, e.g. rule 6 allowing
 `172.16.5.25 → 192.168.5.10 TCP` and rule 8 allowing

@@ -12,9 +12,10 @@ into this workspace as an independent project on 2026-09-07.
 
 ## Assumptions
 
-- Group members listed in the course-info table are taken verbatim from
-  `docs/firewall-tutor-csharp.docx`'s author list — kept per the decision to
-  preserve standard academic group-project attribution.
+- Group members were originally listed in this README's course-info
+  table (verbatim from `docs/firewall-tutor-csharp.docx`'s author list);
+  that table was later removed along with other academic framing. The
+  original author list is still preserved in the docx.
 
 ## Remaining work
 
@@ -33,7 +34,7 @@ rather than implied. This was a joint decision made explicitly to avoid
 two overlapping C++/C# rewrites of the same idea.
 
 The original WinForms app, its CSV data, `.docx` report, and screenshots
-were preserved unmodified under `archive/academic-original/`.
+were preserved unmodified under `archive/original/`.
 
 ### Key engineering decisions and why
 

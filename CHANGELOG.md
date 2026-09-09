@@ -17,7 +17,7 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 - Rebuilt the project as an interactive ACL execution visualizer,
   replacing the WinForms tabbed app (preserved unmodified under
-  `archive/academic-original/`).
+  `archive/original/`).
 - `FirewallTutor.Core`: multi-field (protocol/source/source port/
   destination/destination port) rule model, a real bounded-subset Cisco
   extended ACL parser (fails closed on unsupported syntax), and

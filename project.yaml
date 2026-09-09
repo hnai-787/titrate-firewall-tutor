@@ -2,7 +2,7 @@ name: Titrate
 slug: titrate
 
 category: cybersecurity
-subcategory: "Object-Oriented Programming coursework (CS112)"
+subcategory: "Object-Oriented Programming"
 
 status: completed
 
@@ -11,9 +11,8 @@ visibility: public
 description:
   short: "Firewall Tutor: a Blazor WebAssembly + C# tool that steps through Cisco ACL evaluation field-by-field, showing exactly why a packet was allowed or denied."
   long: |
-    Started as a Windows Forms teaching app for an Object-Oriented
-    Programming course (Air University, Semester 2, Spring 2024) and was
-    rebuilt into an interactive ACL execution visualizer. A pure C#
+    Started as a Windows Forms teaching app and was rebuilt into an
+    interactive ACL execution visualizer. A pure C#
     evaluation engine (FirewallTutor.Core) parses a real (bounded-subset)
     Cisco extended ACL and produces a full execution trace for one packet:
     every rule considered, every field (protocol/source/port/destination)
@@ -26,7 +25,7 @@ description:
     terminal. Positioned as the teaching counterpart to the sibling
     project firewall-rule-engine-cpp (fwlint), which audits whole
     rulesets rather than explaining single-packet execution. The original
-    WinForms program is preserved unmodified under archive/academic-original/.
+    WinForms program is preserved unmodified under archive/original/.
 
 technologies: ["C#", ".NET 10", "Blazor WebAssembly", "Spectre.Console", "xUnit"]
 tags: ["cybersecurity", "firewall", "csharp", "blazor", "webassembly", "networking-education", "cli-tool"]
