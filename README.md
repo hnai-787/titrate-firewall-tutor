@@ -1,6 +1,6 @@
-# FireLab — Interactive ACL Execution Visualizer
+# Titrate — Interactive ACL Execution Visualizer
 
-![firelab banner](assets/brand/firelab-readme-banner.png)
+![titrate banner](assets/brand/titrate-readme-banner.png)
 
 
 ## Course Information
@@ -21,7 +21,7 @@ program, its data, and its `.docx` report are preserved unmodified under
 ## Overview
 
 Firewall Tutor answers a different question than its sibling project,
-[`fwlint`](../firewall-rule-engine-cpp/): fwlint audits a *whole ruleset*
+[Penumbra](../penumbra/): fwlint audits a *whole ruleset*
 for structural problems; Firewall Tutor explains *why one specific packet*
 got the decision it got, one rule and one field at a time. Paste a Cisco
 extended ACL (or use a preset), build a packet, predict what the firewall
@@ -115,7 +115,7 @@ CLI and the web UI can never disagree about what happened.
 
 ## How It Works
 
-![How firelab works](assets/brand/firelab-how-it-works.png)
+![How titrate works](assets/brand/titrate-how-it-works.png)
 
 ## Repository Structure
 

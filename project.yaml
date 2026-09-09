@@ -1,5 +1,5 @@
-name: FireLab
-slug: firelab
+name: Titrate
+slug: titrate
 
 category: cybersecurity
 subcategory: "Object-Oriented Programming coursework (CS112)"
@@ -49,12 +49,12 @@ dates:
   completed: null
 
 links:
-  github: https://github.com/Hussain-Ali-787/firelab
+  github: https://github.com/Hussain-Ali-787/titrate
   demo: null
   documentation: null
 
 assets:
-  hero: assets/brand/firelab-readme-banner.png
+  hero: assets/brand/titrate-readme-banner.png
   screenshots:
     - screenshots
 
