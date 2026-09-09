@@ -27,8 +27,8 @@ jobs:
       - name: Publish
         run: dotnet publish src/FirewallTutor.Web -c Release -o release
 
-      - name: Rewrite base href for the /titrate/ project-page subpath
-        run: sed -i 's|<base href="/" />|<base href="/titrate/" />|' release/wwwroot/index.html
+      - name: Rewrite base href for the /titrate-firewall-tutor/ project-page subpath
+        run: sed -i 's|<base href="/" />|<base href="/titrate-firewall-tutor/" />|' release/wwwroot/index.html
 
       - name: Add SPA fallback for client-side routing
         run: cp release/wwwroot/index.html release/wwwroot/404.html

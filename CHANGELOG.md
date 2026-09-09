@@ -7,7 +7,7 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
-- Deployed to GitHub Pages: https://hnai-787.github.io/titrate/
+- Deployed to GitHub Pages: https://hnai-787.github.io/titrate-firewall-tutor/
 - GitHub and maker-attribution links in the web UI's top bar.
 - The project's own icon as the web UI's favicon and nav-bar logo.
 

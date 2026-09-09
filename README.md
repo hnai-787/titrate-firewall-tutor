@@ -2,7 +2,7 @@
 
 ![titrate banner](assets/brand/titrate-readme-banner.png)
 
-**Live demo:** https://hnai-787.github.io/titrate/
+**Live demo:** https://hnai-787.github.io/titrate-firewall-tutor/
 
 This started as a WinForms app (tabs for Rules/Packets/Firewall/
 Logs) and has been rebuilt into **Titrate**: a browser-based,
@@ -113,7 +113,7 @@ CLI and the web UI can never disagree about what happened.
 ## Repository Structure
 
 ```text
-titrate/
+titrate-firewall-tutor/
   README.md
   CHANGELOG.md
   FirewallTutor.sln
